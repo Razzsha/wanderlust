@@ -32,10 +32,7 @@ const userRouter = require('./routes/user');
 // --------------------- MONGODB CONNECTION ---------------------
 const dbUrl = process.env.ATLASDB_URL || 'mongodb://127.0.0.1:27017/wanderlust';
 
-mongoose.connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(dbUrl)
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.log("MongoDB connection error:", err));
 
@@ -100,12 +97,12 @@ app.get('/', (req, res) => {
 });
 
 // --------------------- ERROR HANDLING ---------------------
-// Catch-all route for any undefined paths
+// Catch-all route for undefined paths
 app.use((req, res, next) => {
     next(new ExpressError(404, 'Page Not Found'));
 });
 
-
+// Global error handler
 app.use((err, req, res, next) => {
     const { statusCode = 500, message = "Something went wrong!" } = err;
     res.status(statusCode).render('error', { message });
