@@ -14,17 +14,8 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
-const ExpressError = require('./utils/ExpressError');
 
-// Cloudinary setup
-const cloudinary = require('cloudinary').v2;
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET,
-});
-
-// Routers
+// Import routers
 const listingRouter = require('./routes/listing');
 const reviewRouter = require('./routes/review');
 const userRouter = require('./routes/user');
@@ -40,11 +31,7 @@ mongoose.connect(dbUrl, {
     .catch(err => console.log("MongoDB connection error:", err));
 
 // --------------------- APP CONFIG ---------------------
-// Trust proxy for production
-if (process.env.NODE_ENV === "production") {
-    app.set('trust proxy', 1);
-}
-
+app.set('trust proxy', 1);
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -56,13 +43,9 @@ app.use(methodOverride('_method'));
 // --------------------- SESSION CONFIG ---------------------
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    crypto: {
-        secret: process.env.SECRET || 'thisshouldbeabettersecret'
-    },
+    crypto: { secret: process.env.SECRET || 'thisshouldbeabettersecret' },
     touchAfter: 24 * 3600,
 });
-
-store.on("error", err => console.log("SESSION STORE ERROR:", err));
 
 const sessionConfig = {
     store,
@@ -73,8 +56,7 @@ const sessionConfig = {
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 7,
     },
 };
@@ -107,19 +89,20 @@ app.get('/', (req, res) => {
     res.redirect('/listings');
 });
 
-// --------------------- ERROR HANDLING ---------------------
-app.use((req, res, next) => {
-    next(new ExpressError(404, 'Page Not Found'));
+// --------------------- 404 HANDLER ---------------------
+app.all('*', (req, res, next) => {
+    res.status(404).render('error', { message: 'Page Not Found' });
 });
 
+// --------------------- ERROR HANDLER ---------------------
 app.use((err, req, res, next) => {
-    const { statusCode = 500, message = "Something went wrong!" } = err;
-    res.status(statusCode).render('error', { message });
+    const { statusCode = 500 } = err;
+    if (!err.message) err.message = 'Something Went Wrong!';
+    res.status(statusCode).render('error', { err });
 });
 
 // --------------------- SERVER START ---------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
