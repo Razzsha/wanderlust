@@ -16,9 +16,6 @@ const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
 const ExpressError = require('./utils/ExpressError');
 
-// Trust proxy for production (IMPORTANT FOR RENDER)
-app.set('trust proxy', 1);
-
 // Cloudinary setup
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
@@ -51,13 +48,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
-// --------------------- SESSION CONFIG (PRODUCTION FIXED) ---------------------
+// --------------------- SESSION CONFIG ---------------------
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    crypto: {
-        secret: process.env.SECRET || 'thisshouldbeabettersecret'
-    },
-    touchAfter: 24 * 3600,
+    crypto: { secret: process.env.SECRET || 'thisshouldbeabettersecret' },
+    touchAfter: 24 * 3600, // 1 day
 });
 
 store.on("error", err => console.log("SESSION STORE ERROR:", err));
@@ -67,13 +62,11 @@ const sessionConfig = {
     name: 'session',
     secret: process.env.SECRET || 'thisshouldbeabettersecret',
     resave: false,
-    saveUninitialized: true,
-    proxy: true, // Required for production
+    saveUninitialized: false,
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Critical for production
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
         maxAge: 1000 * 60 * 60 * 24 * 7,
     },
 };
@@ -93,13 +86,6 @@ app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
-
-    // Debug logging (remove in production if not needed)
-    if (process.env.NODE_ENV !== "production") {
-        console.log('User authenticated:', req.isAuthenticated());
-        console.log('Session ID:', req.sessionID);
-    }
-
     next();
 });
 
@@ -114,9 +100,11 @@ app.get('/', (req, res) => {
 });
 
 // --------------------- ERROR HANDLING ---------------------
+// Catch-all route for any undefined paths
 app.use((req, res, next) => {
     next(new ExpressError(404, 'Page Not Found'));
 });
+
 
 app.use((err, req, res, next) => {
     const { statusCode = 500, message = "Something went wrong!" } = err;
@@ -127,5 +115,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
