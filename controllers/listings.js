@@ -1,4 +1,3 @@
-const { model } = require("mongoose");
 const Listing = require("../models/listing");
 
 // Index route
