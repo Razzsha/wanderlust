@@ -1,0 +1,106 @@
+<style>
+    /* Search Bar Container */
+    .search-container {
+        flex: 0 1 400px;
+        max-width: 400px;
+    }
+
+    .search-form {
+        width: 100%;
+    }
+
+    .search-inp {
+        border-radius: 25px 0 0 25px;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-right: none;
+        flex: 1;
+    }
+
+    .search-btn {
+        background-color: var(--primary-color);
+        color: #fff;
+        border-radius: 0 25px 25px 0;
+        padding: 0 1.5rem;
+        border: 1px solid var(--primary-color);
+        white-space: nowrap;
+    }
+
+    .search-btn:hover {
+        background-color: #e31c5f;
+        color: #fff;
+        border-color: #e31c5f;
+    }
+</style>
+
+<nav class="navbar bg-light border-bottom sticky-top">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+
+        <!-- Left: Logo & Explore -->
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand" href="/listings">
+                <i class="fa-solid fa-compass fs-3 text-primary"></i>
+            </a>
+            <a href="/listings" class="btn btn-outline-primary fw-semibold px-3 py-2 rounded-pill">
+                <i class="fa-solid fa-earth-americas me-1"></i> Explore
+            </a>
+        </div>
+
+        <!-- Middle: Search Bar -->
+        <div class="search-container d-none d-md-flex justify-content-center">
+            <form class="search-form d-flex" role="search">
+                <input class="form-control search-inp" type="search" placeholder="Search destinations" />
+                <button class="btn search-btn" type="submit">Search</button>
+            </form>
+        </div>
+
+        <!-- Right: User Menu -->
+        <div class="d-flex align-items-center gap-3">
+            <a class="nav-link d-none d-md-block" href="/listings/new">Airbnb your home</a>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary border-0 dropdown-toggle d-flex align-items-center"
+                    type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-bars me-1"></i>
+                    <i class="fa-solid fa-user-circle ms-1 fs-5"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <% if (currUser) { %>
+                        <!-- <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                        <li><a class="dropdown-item" href="/trips">Trips</a></li>
+                        <li><a class="dropdown-item" href="/wishlists">Wishlists</a></li> -->
+                        <li>
+                            <!-- <hr class="dropdown-divider"> -->
+                        </li>
+                        <li><a class="dropdown-item" href="/listings/new">Airbnb your home</a></li>
+                        <li><a class="dropdown-item" href="/help">Help</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/logout"><b>Log out</b></a></li>
+                        <% } else { %>
+                            <li><a class="dropdown-item" href="/signup"><b>Sign up</b></a></li>
+                            <li><a class="dropdown-item" href="/login"><b>Log in</b></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/listings/new">Airbnb your home</a></li>
+                            <li><a class="dropdown-item" href="/help">Help</a></li>
+                            <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!-- <script>
+    // Prevent dropdown from closing when clicking inside
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.dropdown-menu').forEach(function (dropdown) {
+            dropdown.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        });
+    });
+</script> -->
