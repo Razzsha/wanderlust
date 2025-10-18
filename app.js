@@ -40,6 +40,11 @@ mongoose.connect(dbUrl, {
     .catch(err => console.log("MongoDB connection error:", err));
 
 // --------------------- APP CONFIG ---------------------
+// Trust proxy for production
+if (process.env.NODE_ENV === "production") {
+    app.set('trust proxy', 1);
+}
+
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -51,8 +56,10 @@ app.use(methodOverride('_method'));
 // --------------------- SESSION CONFIG ---------------------
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    crypto: { secret: process.env.SECRET || 'thisshouldbeabettersecret' },
-    touchAfter: 24 * 3600, // 1 day
+    crypto: {
+        secret: process.env.SECRET || 'thisshouldbeabettersecret'
+    },
+    touchAfter: 24 * 3600,
 });
 
 store.on("error", err => console.log("SESSION STORE ERROR:", err));
@@ -62,11 +69,12 @@ const sessionConfig = {
     name: 'session',
     secret: process.env.SECRET || 'thisshouldbeabettersecret',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7,
     },
 };
@@ -85,7 +93,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
-    res.locals.currUser = req.user; // This makes currUser available in ALL templates
+    res.locals.currUser = req.user;
     next();
 });
 
@@ -100,7 +108,6 @@ app.get('/', (req, res) => {
 });
 
 // --------------------- ERROR HANDLING ---------------------
-// Catch-all route for any undefined paths
 app.use((req, res, next) => {
     next(new ExpressError(404, 'Page Not Found'));
 });
@@ -114,4 +121,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

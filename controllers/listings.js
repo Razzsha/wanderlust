@@ -3,12 +3,17 @@ const Listing = require("../models/listing");
 // Index route
 module.exports.index = async (req, res) => {
     const listings = await Listing.find({});
-    res.render('listings/index', { listings });
+    res.render('listings/index', {
+        listings,
+        currUser: req.user
+    });
 };
 
 // New Route
 module.exports.renderNewForm = (req, res) => {
-    res.render('listings/new');
+    res.render('listings/new', {
+        currUser: req.user
+    });
 };
 
 //Show Route
@@ -24,9 +29,11 @@ module.exports.showListing = async (req, res) => {
         req.flash('error', 'Listing you requested for does not exist!');
         return res.redirect('/listings');
     }
-    console.log(listing);
 
-    res.render('listings/show', { listing });
+    res.render('listings/show', {
+        listing,
+        currUser: req.user
+    });
 };
 
 //create Route
@@ -52,7 +59,11 @@ module.exports.editListing = async (req, res) => {
 
     let originalImageUrl = listing.image.url;
     originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
-    res.render('listings/edit', { listing, originalImageUrl });
+    res.render('listings/edit', {
+        listing,
+        originalImageUrl,
+        currUser: req.user
+    });
 };
 
 // Update route

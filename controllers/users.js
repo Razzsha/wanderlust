@@ -2,11 +2,13 @@ const User = require("../models/user");
 
 // Render SignUp
 module.exports.renderSignupForm = (req, res) => {
-    res.render('users/signup');
+    res.render('users/signup', {
+        currUser: req.user  // Add this line
+    });
 };
 
 // SignUp Route
-module.exports.signup = async (req, res) => {
+module.exports.signup = async (req, res, next) => {  // Add next parameter
     try {
         let { username, email, password } = req.body;
         const newUser = new User({ email, username });
@@ -16,7 +18,7 @@ module.exports.signup = async (req, res) => {
             if (err) {
                 return next(err);
             }
-            req.flash('success', 'welcome to wanderlust!');
+            req.flash('success', 'Welcome to Wanderlust!');
             res.redirect('/listings');
         });
     } catch (e) {
@@ -27,12 +29,14 @@ module.exports.signup = async (req, res) => {
 
 // Render LoginForm
 module.exports.renderLoginForm = (req, res) => {
-    res.render('users/login');
+    res.render('users/login', {
+        currUser: req.user  // Add this line
+    });
 };
 
 // Login Route
 module.exports.login = async (req, res) => {
-    req.flash('success', 'welcome back to wanderlust!');
+    req.flash('success', 'Welcome back to Wanderlust!');
     const redirectUrl = res.locals.redirectUrl || "/listings";
     res.redirect(redirectUrl);
 };
@@ -43,7 +47,7 @@ module.exports.logout = (req, res, next) => {
         if (err) {
             return next(err);
         }
-        req.flash("success", "you are logged out!");
+        req.flash("success", "You are logged out!");
         res.redirect('/listings');
     });
 };
